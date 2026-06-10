@@ -1,0 +1,52 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+
+@theme {
+  --color-primary: #1A3A52;
+  --color-secondary: #F8F9FA;
+  --color-accent: #2E5C8A;
+  --color-accent-red: #C62828;
+  --color-text: #2C3E50;
+  --color-border: #E1E8ED;
+}
+
+:root {
+  --primary-color: #1A3A52;
+  --secondary-color: #F8F9FA;
+  --accent-color: #2E5C8A;
+  --accent-red: #C62828;
+  --text-color: #2C3E50;
+  --border-color: #E1E8ED;
+}
+
+body {
+  color: var(--text-color);
+  background-color: var(--secondary-color);
+  line-height: 1.6;
+}
+
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
