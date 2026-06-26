@@ -2,8 +2,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Area_map } from "../../ui/area-map";
-import type { SourceCharts } from "../../lib/data";
+
+import { Area_map } from "./area-map";
+import { SourceCharts } from "../../lib/data";
 
 type Props = {
   initialData: SourceCharts[];
@@ -44,9 +45,8 @@ export function AreaMapClient({ initialData, start, end, dateFrom, dateTo }: Pro
 
     
     const id = setInterval(fetchData, 600_000);
-    
+
     return () => {
-      
       cancelled = true;
       clearInterval(id);
     };

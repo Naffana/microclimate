@@ -1,26 +1,26 @@
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Nav from "./ui/nav";
+import type { ReactNode } from "react";
+import Providers from "./providers";
+import "./globals.css"
+import { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: 'Микроклимат',
+  icons: {
+    icon: [
+      { url: '/2.png', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/2.png' },
+    ],
+  },
+};
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html
-      lang="ru"
-      className={`h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-row">
-        <div className="lg:w-[22%] 2xl:w-[17%]">
-          <Nav/>
-        </div>
-        <div  className="lg:w-[78%] 2xl:w-[83%]">
-          {children}
-        </div>
-        </body>
+    <html lang="ru" className={`h-full antialiased`}>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

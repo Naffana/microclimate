@@ -1,6 +1,7 @@
-import { TableClient } from "../api/info/info_refresh";
-import { fetchType } from "../lib/data";
-import Filtr_data from "./filtr-data";
+
+import { fetchType } from "../../lib/data";
+import Filtr_data from "../filtr-data";
+import { TableClient } from "./info_refresh";
 
 async function Page_info({ source, searchParams}: { source: number; searchParams?: { dateFrom?: string; dateTo?: string };}) {
   const type_info = await fetchType(source);

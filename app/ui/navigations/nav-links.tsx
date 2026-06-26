@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link";
-import { fetchLinks } from "../lib/data";
+import { fetchLinks } from "../../lib/data";
 import { usePathname } from "next/navigation";
 import clsx from 'clsx';
 
@@ -10,7 +10,7 @@ interface NavLinks {
 }
 
 function Navlinks({links}:NavLinks) {
-   const links_home = [{name: 'Главная', url: "/"}, ...links];
+   const links_home = [{name: 'Главная', url: "/source/home"}, ...links];
    const pathname = usePathname();
     return (
         <>

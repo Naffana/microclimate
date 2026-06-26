@@ -53,6 +53,11 @@ export type Props = {
 
 export type DeviceId = string;
 
+export type ListRoles = {
+  ID: number
+  Role: string;
+}[]
+
 export type CombinedPoint = {
   ts: number;  
   time: string;     

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // Подавление предупреждения recharts о размерах контейнера
 const originalWarn = console.warn;
@@ -29,13 +29,15 @@ import {
   LegendPayload
 } from "recharts";
 import { CustomTooltip } from "./CustomToolTip";
-import { buildTicks, combineByMinute } from "../lib/actions";
-import { CombinedPoint, Props } from "../lib/definitions";
+import { buildTicks, combineByMinute } from "../../lib/actions";
+import { CombinedPoint, Props } from "../../lib/definitions";
 
 
 const MS_DAY = 24 * 60 * 60 * 1000;
 
 export function SimpleAreaChart({ data, start, end, min, max}: Props) {
+  
+  
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => setIsMounted(true), []);
 
@@ -55,7 +57,118 @@ const handleLegendMouseLeave = () => {
     [data]
   );
 
-  const { domain, ticksV, ticks } = buildTicks(min, max, new Date(data[0].time), new Date(data[data.length - 1].time));
+  const { domain, ticksV, ticks } = React.useMemo(
+    () => buildTicks(min, max, new Date(data[0].time), new Date(data[data.length - 1].time)),
+    [min, max, data]
+  );
+
+  const [xDomain, setXDomain] = useState<[number, number]>([
+    ticks[0],
+    ticks[ticks.length - 1],
+  ]);
+
+  useEffect(() => {
+    setXDomain([ticks[0], ticks[ticks.length - 1]]);
+  }, [ticks[0], ticks[ticks.length - 1]]);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const xDomainRef = useRef(xDomain);
+  xDomainRef.current = xDomain;
+  const ticksRef = useRef(ticks);
+  ticksRef.current = ticks;
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+
+      const rect = el.getBoundingClientRect();
+      const ratio = (e.clientX - rect.left) / rect.width;
+
+      const [min, max] = xDomainRef.current;
+      const fullMin = ticksRef.current[0];
+      const fullMax = ticksRef.current[ticksRef.current.length - 1];
+      const cursorTs = min + ratio * (max - min);
+
+      const range = max - min;
+      const step = range * 0.1;
+
+      if (e.deltaY < 0) {
+        const newRange = range - 2 * step;
+        if (newRange > (fullMax - fullMin) * 0.01) {
+          setXDomain([
+            cursorTs - ratio * newRange,
+            cursorTs + (1 - ratio) * newRange,
+          ]);
+        }
+      } else {
+        let newMin = cursorTs - ratio * (range + 2 * step);
+        let newMax = cursorTs + (1 - ratio) * (range + 2 * step);
+        if (newMin < fullMin) { newMax += fullMin - newMin; newMin = fullMin; }
+        if (newMax > fullMax) { newMin -= newMax - fullMax; newMax = fullMax; }
+        if (newMin < fullMin) newMin = fullMin;
+        setXDomain([newMin, newMax]);
+      }
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, [isMounted]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    let dragging = false;
+    let startX = 0;
+    let startDomain: [number, number] = [0, 0];
+
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      dragging = true;
+      startX = e.clientX;
+      startDomain = [...xDomainRef.current];
+      el.style.cursor = "grabbing";
+      document.body.style.userSelect = "none";
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragging) return;
+
+      const rect = el.getBoundingClientRect();
+      const pixelDelta = e.clientX - startX;
+      const timeDelta = (pixelDelta / rect.width) * (startDomain[1] - startDomain[0]);
+
+      const fullMin = ticksRef.current[0];
+      const fullMax = ticksRef.current[ticksRef.current.length - 1];
+      let newMin = startDomain[0] - timeDelta;
+      let newMax = startDomain[1] - timeDelta;
+
+      if (newMin < fullMin) { newMax += fullMin - newMin; newMin = fullMin; }
+      if (newMax > fullMax) { newMin -= newMax - fullMax; newMax = fullMax; }
+      if (newMin < fullMin) newMin = fullMin;
+
+      setXDomain([newMin, newMax]);
+    };
+
+    const onMouseUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      el.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+
+    el.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+    return () => {
+      el.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [isMounted]);
 
   const showDateAndTime = end.getTime() - start.getTime() > MS_DAY;
 
@@ -114,7 +227,10 @@ const handleLegendMouseLeave = () => {
   const colors = ["#F97373", "#60A5FA", "#34D399", "#A855F7"];
   
   return (
-    <div className="w-full 2xl:h-100 lg:h-70  bg-white rounded-lg shadow">
+    <div className="w-full 2xl:h-100 lg:h-70  bg-white rounded-lg shadow"
+    ref={containerRef}
+    style={{ cursor: "grab" }}
+    >
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart<CombinedPoint>
           data={combined} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
@@ -127,7 +243,8 @@ const handleLegendMouseLeave = () => {
             type="number"
             tick={{ fontSize: 13, fill: "#6B7280" }}
             ticks={ticks}
-            domain={[ticks[0], ticks[ticks.length - 1]]}
+            domain={xDomain}
+            allowDataOverflow
             tickLine={false}
             axisLine={false}
             tickFormatter={formatXAxis}

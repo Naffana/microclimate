@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import type { event } from "../../lib/definitions";
-import Table from "@/app/ui/table";
+import Table from "@/app/ui/table/table";
 
 type Props = {
   id_type: number;

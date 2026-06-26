@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import type { event } from "../lib/definitions";
+import type { event } from "../../lib/definitions";
 type Props = {
   rows: event[];
   type: string;

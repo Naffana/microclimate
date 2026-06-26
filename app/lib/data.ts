@@ -1,6 +1,6 @@
 import { log } from "node:console";
 import { connect, sql } from "./db";
-import { links, type, event, area} from "./definitions";
+import { links, type, event, area, ListRoles} from "./definitions";
 
 export async function fetchLinks() {
     const pool = await connect();
@@ -23,6 +23,24 @@ export async function fetchLinks() {
   } catch (error) {
     console.error("Ошибка базы данных:", error);
     throw new Error("Ошибка получения ссылок комнат");
+  }
+}
+
+export async function fetchListRoles() {
+    const pool = await connect();
+
+    try {
+        const result = await pool
+        .request()
+        .query<ListRoles>(
+           `select distinct Auth.ID, Auth.Role from Auth` 
+        )
+    const Roles = result.recordset
+    
+    return Roles;
+  } catch (error) {
+    console.error("Ошибка базы данных:", error);
+    throw new Error("Ошибка получения ролей");
   }
 }
 

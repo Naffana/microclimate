@@ -2,7 +2,7 @@
 "use client";
 
 import { SimpleAreaChart } from "./Area";
-import type { SourceCharts } from "../lib/data";
+import type { SourceCharts } from "../../lib/data";
 import { useEffect, useState } from "react";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import clsx from "clsx";
