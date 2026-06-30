@@ -105,3 +105,19 @@ export function generateTicksForRange(minTs: number, maxTs: number): number[] {
   return ticks.length > 0 ? ticks : [minTs, maxTs];
 }
 
+export function downsample(data: CombinedPoint[], devices: DeviceId[], maxPoints: number = 500): CombinedPoint[] {
+  if (data.length <= maxPoints) return data;
+  const step = Math.ceil(data.length / maxPoints);
+  const result: CombinedPoint[] = [];
+  for (let i = 0; i < data.length; i += step) {
+    const chunk = data.slice(i, i + step);
+    const avg: any = { ts: chunk[0].ts, time: chunk[0].time };
+    for (const d of devices) {
+      const vals = chunk.map(c => (c as any)[d]).filter((v: any) => typeof v === 'number');
+      avg[d] = vals.length > 0 ? vals.reduce((a: number, b: number) => a + b, 0) / vals.length : null;
+    }
+    result.push(avg);
+  }
+  return result;
+}
+

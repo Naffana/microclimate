@@ -45,11 +45,9 @@ export function AreaMapClient({ initialData, start, end, dateFrom, dateTo }: Pro
     };
 
     fetchData();
-    const id = setInterval(fetchData, 600_000);
 
     return () => {
       cancelled = true;
-      clearInterval(id);
     };
   }, [dateFrom, dateTo]);
 

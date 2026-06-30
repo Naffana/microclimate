@@ -9,15 +9,18 @@ export default function DateFilter() {
   const searchParams = useSearchParams();
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [navigating, setNavigating] = useState(false);
 
   useEffect(() => {
    const from = searchParams.get('dateFrom') || '';
     const to = searchParams.get('dateTo') || '';
     setDateFrom(from);
     setDateTo(to);
+    setNavigating(false);
   }, [searchParams]);
 
   const handleApply = () => {
+    setNavigating(true);
     const params = new URLSearchParams();
     
     if (dateFrom) params.set('dateFrom', dateFrom);
@@ -28,11 +31,18 @@ export default function DateFilter() {
   };
 
  const handleClear = () => {
+    setNavigating(true);
     setDateFrom('');
     setDateTo('');
     router.push('?'); 
   };
   return (
+    <>
+    {navigating && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80">
+        <div className="text-gray-500 text-lg">Загрузка данных...</div>
+      </div>
+    )}
      <div className="mb-4 flex flex-row gap-2">
       <div className="flex gap-2">
         <div className="flex flex-col">
@@ -72,5 +82,6 @@ export default function DateFilter() {
         </button>
       </div>
     </div>
+    </>
   );
 }

@@ -29,7 +29,7 @@ import {
   LegendPayload
 } from "recharts";
 import { CustomTooltip } from "./CustomToolTip";
-import { buildTicks, combineByMinute, generateTicksForRange } from "../../lib/actions";
+import { buildTicks, combineByMinute, generateTicksForRange, downsample } from "../../lib/actions";
 import { CombinedPoint, Props } from "../../lib/definitions";
 
 
@@ -49,9 +49,14 @@ const handleLegendMouseLeave = () => {
   setHoveringDataKey(undefined);
 };
   
-  const { devices, combined } = React.useMemo(
+  const { devices, combined: rawCombined } = React.useMemo(
     () => combineByMinute(data),
     [data]
+  );
+
+  const combined = React.useMemo(
+    () => downsample(rawCombined, devices, 100),
+    [rawCombined, devices]
   );
 
   const yMargin = type?.toLowerCase().includes("температур") ? 5 : 10;
@@ -251,16 +256,16 @@ const handleLegendMouseLeave = () => {
 
   const findClosest = React.useCallback((ts: number): CombinedPoint | null => {
     if (combined.length === 0) return null;
-    let best = combined[0];
-    let bestDist = Math.abs(best.ts - ts);
-    for (let i = 1; i < combined.length; i++) {
-      const dist = Math.abs(combined[i].ts - ts);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = combined[i];
-      }
+    let lo = 0, hi = combined.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (combined[mid].ts < ts) lo = mid + 1;
+      else hi = mid;
     }
-    return best;
+    if (lo > 0 && Math.abs(combined[lo - 1].ts - ts) < Math.abs(combined[lo].ts - ts)) {
+      return combined[lo - 1];
+    }
+    return combined[lo];
   }, [combined]);
 
   const syncedPoint = React.useMemo(() => {
