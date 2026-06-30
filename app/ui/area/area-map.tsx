@@ -4,12 +4,14 @@
 import { SimpleAreaChart } from "./Area";
 import type { SourceCharts } from "../../lib/data";
 import { useEffect, useState } from "react";
+import { buildTicks, combineByMinute } from "../../lib/actions";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import clsx from "clsx";
 
-export function Area_map({ sources, start, end}: { sources: SourceCharts[], start:Date, end: Date}) {
+export function Area_map({ sources, start, end, isLoading}: { sources: SourceCharts[], start:Date, end: Date, isLoading?: boolean}) {
  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
  const [xDomains, setXDomains] = useState<Record<string, [number, number]>>({});
+ const [fullRanges, setFullRanges] = useState<Record<string, [number, number]>>({});
  const [hoveredInfo, setHoveredInfo] = useState<Record<string, {ts: number, x: number, w: number} | null>>({});
 
   const toggleSource = (sourceName: string) => {
@@ -55,14 +57,18 @@ export function Area_map({ sources, start, end}: { sources: SourceCharts[], star
                   }))}
                   start={start}
                   end = {end}
+                  type={chart.type}
                   min={chart.min}
                   max={chart.max}
                   xDomain={xDomains[source.source]}
+                  fullRange={fullRanges[source.source]}
+                  onFullRangeChange={(d) => setFullRanges(prev => ({...prev, [source.source]: d}))}
                   onXDomainChange={(d) => setXDomains(prev => ({...prev, [source.source]: d}))}
                   hoveredTs={info?.ts ?? null}
                   hoveredX={info?.x}
                   containerWidth={info?.w}
                   onTooltipChange={(i) => setHoveredInfo(prev => ({...prev, [source.source]: i}))}
+                  isLoading={isLoading}
                 />
                 </div>
               </div>

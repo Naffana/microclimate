@@ -32,9 +32,9 @@ export function combineByMinute(data: Point[]): { devices: DeviceId[]; combined:
 }
 
 
-export function buildTicks(min: number, max: number, start:Date, end:Date) {
-  const startV = min - 10;
-  const endV = max + 10;
+export function buildTicks(min: number, max: number, start:Date, end:Date, yMargin: number = 10) {
+  const startV = min - yMargin;
+  const endV = max + yMargin;
   const ticksV: number[] = [];
 
   const from = Math.floor(startV / 5) * 5;

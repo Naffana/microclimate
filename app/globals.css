@@ -50,3 +50,45 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f1f5f9;
 }
+
+svg:focus, svg *:focus {
+  outline: none;
+}
+
+.recharts-surface {
+  overflow: visible;
+}
+
+.recharts-wrapper {
+  outline: none !important;
+}
+
+.recharts-tooltip-cursor {
+  stroke: transparent !important;
+}
+
+.recharts-active-dot circle {
+  r: 0 !important;
+}
+
+.recharts-area-area {
+  pointer-events: none;
+}
+
+.chart-draggable {
+  cursor: grab !important;
+}
+
+.chart-draggable * {
+  cursor: inherit !important;
+}
+
+.chart-draggable.dragging,
+.chart-draggable.dragging * {
+  cursor: grabbing !important;
+}
+
+.chart-draggable .recharts-legend-wrapper,
+.chart-draggable .recharts-legend-wrapper * {
+  cursor: pointer !important;
+}

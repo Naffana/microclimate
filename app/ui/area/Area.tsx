@@ -35,12 +35,8 @@ import { CombinedPoint, Props } from "../../lib/definitions";
 
 const MS_DAY = 24 * 60 * 60 * 1000;
 
-export function SimpleAreaChart({ data, start, end, min, max, xDomain: xDomainProp, onXDomainChange, hoveredTs, hoveredX, containerWidth: containerWidthProp, onTooltipChange }: Props) {
+export function SimpleAreaChart({ data, start, end, min, max, type, xDomain: xDomainProp, fullRange, onFullRangeChange, onXDomainChange, hoveredTs, hoveredX, containerWidth: containerWidthProp, onTooltipChange, isLoading }: Props) {
   
-  
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => setIsMounted(true), []);
-
   const [hoveringDataKey, setHoveringDataKey] =
   useState<string | undefined>(undefined);
   const [isLocalHover, setIsLocalHover] = useState(false);
@@ -58,9 +54,11 @@ const handleLegendMouseLeave = () => {
     [data]
   );
 
+  const yMargin = type?.toLowerCase().includes("температур") ? 5 : 10;
+
   const { domain, ticksV, ticks } = React.useMemo(
-    () => buildTicks(min, max, new Date(data[0].time), new Date(data[data.length - 1].time)),
-    [min, max, data]
+    () => buildTicks(min, max, new Date(data[0].time), new Date(data[data.length - 1].time), yMargin),
+    [min, max, data, yMargin]
   );
 
   const [localXDomain, setLocalXDomain] = useState<[number, number]>([
@@ -141,7 +139,7 @@ const handleLegendMouseLeave = () => {
 
     el.addEventListener("wheel", handleWheel, { passive: false });
     return () => el.removeEventListener("wheel", handleWheel);
-  }, [isMounted]);
+  }, []);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -194,7 +192,7 @@ const handleLegendMouseLeave = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
     };
-  }, [isMounted]);
+  }, []);
 
   const showDateAndTime = end.getTime() - start.getTime() > MS_DAY;
 
@@ -340,21 +338,26 @@ const handleLegendMouseLeave = () => {
       el.removeEventListener("mousemove", handleTooltipMove);
       el.removeEventListener("mouseleave", handleTooltipLeave);
     };
-  }, [isMounted]);
+  }, []);
 
-   if (!isMounted) {
-    return (
-      <div className="w-full h-64 bg-white rounded-lg shadow flex items-center justify-center text-gray-400 text-sm">
-        Загрузка информации...
-      </div>
-    );
-  }
-  
+  useEffect(() => {
+    onFullRangeChange?.([ticks[0], ticks[ticks.length - 1]]);
+  }, [ticks[0], ticks[ticks.length - 1]]);
+
+  const canDrag = fullRange
+    ? (xDomain[0] - fullRange[0]) > 1000 || (fullRange[1] - xDomain[1]) > 1000
+    : false;
+
   return (
-    <div className="w-full h-full bg-white rounded-lg shadow"
+    <div className={`w-full h-full bg-white rounded-lg shadow ${canDrag ? "chart-draggable" : ""}`}
     ref={containerRef}
-    style={{ cursor: "grab", position: "relative" }}
+    style={{ position: "relative", userSelect: "none" }}
     >
+      {isLoading ? (
+        <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+          Загрузка информации...
+        </div>
+      ) : (
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart<CombinedPoint>
           data={combined} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}
@@ -436,6 +439,7 @@ const handleLegendMouseLeave = () => {
           
         </AreaChart>
       </ResponsiveContainer>
+      )}
       {hoveredTs != null && syncedPoint && (
         <div
           style={{

@@ -16,12 +16,14 @@ type Props = {
 
 export function AreaMapClient({ initialData, start, end, dateFrom, dateTo }: Props) {
   const [sources, setSources] = useState<SourceCharts[]>(initialData);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         const params = new URLSearchParams();
         if (dateFrom) params.set("dateFrom", dateFrom);
         if (dateTo) params.set("dateTo", dateTo);
@@ -37,13 +39,12 @@ export function AreaMapClient({ initialData, start, end, dateFrom, dateTo }: Pro
         }
       } catch (e) {
         console.error("Failed to refresh area info", e);
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     };
 
-   
     fetchData();
-
-    
     const id = setInterval(fetchData, 600_000);
 
     return () => {
@@ -52,5 +53,5 @@ export function AreaMapClient({ initialData, start, end, dateFrom, dateTo }: Pro
     };
   }, [dateFrom, dateTo]);
 
-  return <Area_map sources={sources} start={start} end={end} />;
+  return <Area_map sources={sources} start={start} end={end} isLoading={isLoading} />;
 }
