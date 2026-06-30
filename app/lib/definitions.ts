@@ -48,6 +48,12 @@ export type Props = {
   end: Date;
   min:number;
   max:number;
+  xDomain?: [number, number];
+  onXDomainChange?: (d: [number, number]) => void;
+  hoveredTs?: number | null;
+  hoveredX?: number;
+  containerWidth?: number;
+  onTooltipChange?: (info: {ts: number, x: number, w: number} | null) => void;
 };
 
 

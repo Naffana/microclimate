@@ -13,11 +13,11 @@ export  default async function PageLayout({
   const session = await auth();
   return (
     <Providers session={session ?? undefined}>
-    <div className="flex ">
+    <div className="flex h-full">
         <div className="lg:w-[22%] 2xl:w-[17%]">
           <Nav links={links}/>
         </div>
-        <div  className="lg:w-[78%] 2xl:w-[83%]">
+        <div className="lg:w-[78%] 2xl:w-[83%] h-full">
           {children}
         </div>
     </div>

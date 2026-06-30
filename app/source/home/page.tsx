@@ -21,11 +21,11 @@ const session = await auth();
         redirect("/auth"); 
     }
 return (
-    <div className="min-h-screen">
-    <div className="flex justify-center mt-5">
+    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="flex justify-center mt-5 shrink-0">
       <DateFilter/>
     </div>
-    <div className="">
+    <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden snap-y snap-mandatory">
     <AreaMapClient
           initialData={chartdata}
           start={start}

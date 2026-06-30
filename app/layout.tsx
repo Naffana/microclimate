@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ru" className={`h-full antialiased`}>
-      <body>
+      <body className="h-full">
         <Providers>{children}</Providers>
       </body>
     </html>
