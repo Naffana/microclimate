@@ -55,7 +55,7 @@ const handleLegendMouseLeave = () => {
   );
 
   const combined = React.useMemo(
-    () => downsample(rawCombined, devices, 100),
+    () => downsample(rawCombined, devices, 150),
     [rawCombined, devices]
   );
 

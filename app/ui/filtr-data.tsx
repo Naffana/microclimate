@@ -1,8 +1,8 @@
 // app/ui/date-filter.tsx
 'use client';
-
+import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 
 export default function DateFilter() {
   const router = useRouter();
@@ -10,6 +10,7 @@ export default function DateFilter() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [navigating, setNavigating] = useState(false);
+  const [isRefreshing, startTransition] = useTransition();
 
   useEffect(() => {
    const from = searchParams.get('dateFrom') || '';
@@ -19,7 +20,17 @@ export default function DateFilter() {
     setNavigating(false);
   }, [searchParams]);
 
+  const handleRefresh = () => {
+    startTransition(() => {
+      router.refresh();
+    });
+  };
+
   const handleApply = () => {
+    const currentFrom = searchParams.get('dateFrom') || '';
+    const currentTo = searchParams.get('dateTo') || '';
+    if (dateFrom === currentFrom && dateTo === currentTo) return;
+
     setNavigating(true);
     const params = new URLSearchParams();
     
@@ -31,14 +42,21 @@ export default function DateFilter() {
   };
 
  const handleClear = () => {
+    const currentFrom = searchParams.get('dateFrom') || '';
+    const currentTo = searchParams.get('dateTo') || '';
+    if (!currentFrom && !currentTo) {
+      setDateFrom('');
+      setDateTo('');
+      return;
+    }
     setNavigating(true);
     setDateFrom('');
     setDateTo('');
-    router.push('?'); 
+    router.push('?');
   };
   return (
     <>
-    {navigating && (
+    {(navigating || isRefreshing) && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80">
         <div className="text-gray-500 text-lg">Загрузка данных...</div>
       </div>
@@ -79,6 +97,12 @@ export default function DateFilter() {
           className="bg-accent-red px-4 cursor-pointer rounded-lg text-secondary font-bold"
         >
           Х
+        </button>
+        <button 
+          onClick={handleRefresh}
+          className="bg-border  px-4 cursor-pointer rounded-lg text-accent font-bold"
+        >
+          <ArrowPathIcon className="h-5 w-5"/>
         </button>
       </div>
     </div>

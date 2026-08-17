@@ -1,6 +1,6 @@
 import { log } from "node:console";
 import { connect, sql } from "./db";
-import { links, type, event, area, ListRoles} from "./definitions";
+import { links, type, event, area, ListRoles, Source, NormyRow, Device} from "./definitions";
 
 export async function fetchLinks() {
     const pool = await connect();
@@ -33,7 +33,7 @@ export async function fetchListRoles() {
         const result = await pool
         .request()
         .query<ListRoles>(
-           `select distinct Auth.ID, Auth.Role from Auth` 
+           `select distinct Auth.ID, Auth.Role, Auth.Password from Auth` 
         )
     const Roles = result.recordset
     
@@ -222,5 +222,10 @@ export async function fetchAreaInfo(dateFrom?: string, dateTo?: string): Promise
   
   return result;
 }
+
+
+
+
+
 
 

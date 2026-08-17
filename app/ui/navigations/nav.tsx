@@ -26,7 +26,7 @@ function Nav({links}:{links:links[]}) {
         </div>
         <div className="w-full flex flex-col justify-center items-center  mt-auto">
         {role === "Администратор" &&
-        <Link href="/" className="text-center bg-border text-text w-[80%] py-1 text-md mb-2 rounded-lg">
+        <Link href="/admin" className="text-center bg-border text-text w-[80%] py-1 text-md mb-2 rounded-lg">
             Админ-панель
         </Link>
         }
