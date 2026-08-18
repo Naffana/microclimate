@@ -4,6 +4,14 @@ import bcrypt from "bcrypt";
 import { connect } from "@/app/lib/db";
 
 export const authConfig: NextAuthConfig = {
+  logger: {
+    error(code, ...message) {
+      // Не логировать ожидаемую ошибку при неверных учетных данных
+      const msg = code instanceof Error ? code.message : String(code);
+      if (msg.includes("CredentialsSignin")) return;
+      console.error(code, ...message);
+    },
+  },
   providers: [
     Credentials({
       name: "Credentials",

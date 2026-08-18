@@ -1,8 +1,6 @@
 'use client'
 import { useState } from "react";
 import { ListRoles } from "../lib/definitions";
-import { useRouter } from "next/navigation";
-import { login } from "../lib/auth-actions";
 
 function Auth( {roles}:{roles:ListRoles}) {
     
@@ -10,7 +8,6 @@ function Auth( {roles}:{roles:ListRoles}) {
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const router = useRouter();
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const Role = e.target.value;
@@ -28,7 +25,11 @@ function Auth( {roles}:{roles:ListRoles}) {
       return;
     }
 
-    const res = await login(selected, password);
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: selected, password }),
+    }).then(r => r.json());
 
     setLoading(false);
 
