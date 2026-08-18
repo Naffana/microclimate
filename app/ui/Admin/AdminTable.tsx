@@ -1,4 +1,3 @@
-// components/admin/TableWithForm.tsx
 "use client";
 
 import React from "react";
@@ -46,21 +45,39 @@ export function TableWithForm({ config, rows, tableKey }: TableWithFormProps) {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
+  // Функция для обновления данных таблицы
+  const refreshTableData = async () => {
+    try {
+      const res = await fetch(`/api/admin/${tableKey}`, {
+        method: "GET",
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLocalRows(data);
+      }
+    } catch (error) {
+      console.error("Ошибка обновления таблицы:", error);
+    }
+  };
+
   const handleDelete = async (id: Row["id"]) => {
+    // Сначала удаляем с сервера
     await fetch(`/api/admin/${tableKey}/${id}`, {
       method: "DELETE",
     });
+    // Затем обновляем данные с сервера
+    await refreshTableData();
+    // И удаляем из локального состояния
     setLocalRows((prev) => prev.filter((row) => row.id !== id));
   };
 
   function renderCell(field: TableField, row: Row) {
   const value = row[field.key];
 
- 
   if (field.key === "Password") {
     return "•".repeat(10); 
   }
-
 
   return String(value ?? "");
 }
@@ -71,7 +88,7 @@ export function TableWithForm({ config, rows, tableKey }: TableWithFormProps) {
     const password = formData["Password"] as string | undefined;
 
     if ((!password || password.trim() === "")) {
-      alert("Пароль не может быть пустым.");
+      alert("Пароль не может быть пустым."); 
       return; 
     }
   }
@@ -82,18 +99,20 @@ export function TableWithForm({ config, rows, tableKey }: TableWithFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      const newRow = await res.json();
+const newRow = await res.json();
       setLocalRows((prev) => [...prev, newRow]);
+      await refreshTableData();
     } else if (mode === "edit" && editingId != null) {
       const res = await fetch(`/api/admin/${tableKey}/${editingId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      const updated = await res.json();
+const updated = await res.json();
       setLocalRows((prev) =>
         prev.map((row) => (row.id === editingId ? updated : row))
       );
+      await refreshTableData();
     }
     cancel();
   };

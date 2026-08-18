@@ -49,5 +49,8 @@ export async function sqlDeleteSource(id: number) {
   await pool
     .request()
     .input("Id_Source", sql.Int, id)
-    .query(`DELETE FROM Source WHERE Id_Source = @Id_Source`);
+    .query(`
+      DELETE FROM Event WHERE ID_Source = @Id_Source;
+      DELETE FROM Source WHERE Id_Source = @Id_Source;
+    `);
 }

@@ -1,7 +1,9 @@
 import { CombinedPoint, DeviceId, Point } from "./definitions";
 
-function bucketMinute(ts: number): number {
+function bucketMinute(ts: number | undefined): number {
+  if (ts == null) return Date.now();
   const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return Date.now();
   d.setSeconds(0, 0);
   return d.getTime();
 }

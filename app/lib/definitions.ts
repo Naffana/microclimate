@@ -32,9 +32,11 @@ export type links= {
 }
 
 export type area = {
+    Ip: string;
     Source_Name: string;
     Type_Name: string;
     Device_Name: string;
+    Device_Real_Name: string;
     Date: Date;
     Value: number;
     Min: number;
@@ -46,6 +48,7 @@ export type Point = {
   ts: number;
   temp: number;
   device: string;
+  deviceName?: string;
 };
 
 export type Props = {

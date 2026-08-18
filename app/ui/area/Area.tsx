@@ -40,6 +40,7 @@ export function SimpleAreaChart({ data, start, end, min, max, type, xDomain: xDo
   const [hoveringDataKey, setHoveringDataKey] =
   useState<string | undefined>(undefined);
   const [isLocalHover, setIsLocalHover] = useState(false);
+  const [chartWidth, setChartWidth] = useState(0);
 
 const handleLegendMouseEnter = (payload: any) => {
   setHoveringDataKey(payload.dataKey as string);
@@ -62,7 +63,11 @@ const handleLegendMouseLeave = () => {
   const yMargin = type?.toLowerCase().includes("температур") ? 5 : 10;
 
   const { domain, ticksV, ticks } = React.useMemo(
-    () => buildTicks(min, max, new Date(data[0].time), new Date(data[data.length - 1].time), yMargin),
+    () => buildTicks(min, max, 
+      data[0] && data[0].time ? new Date(data[0].time) : new Date(0),
+      data[data.length - 1] && data[data.length - 1].time ? new Date(data[data.length - 1].time) : new Date(0),
+      yMargin
+    ),
     [min, max, data, yMargin]
   );
 
@@ -105,6 +110,19 @@ const handleLegendMouseLeave = () => {
   xDomainRef.current = xDomain;
   const ticksRef = useRef(ticks);
   ticksRef.current = ticks;
+
+  // Отслеживаем фактическую ширину контейнера для адаптивного размера шрифта легенды
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setChartWidth(entry.contentRect.width);
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -412,22 +430,70 @@ const handleLegendMouseLeave = () => {
             
             <Legend
               onMouseEnter={handleLegendMouseEnter}
-              onMouseLeave={handleLegendMouseLeave} 
+              onMouseLeave={handleLegendMouseLeave}
               verticalAlign="bottom"
               align="center"
               iconType="plainline"
-              wrapperStyle={{cursor:"pointer", fontSize: 16}}
+              content={({ payload }: any) => (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "0 16px",
+                    width: "100%",
+                    cursor: "pointer",
+                    fontSize:
+                      chartWidth < 300 ? 9 :
+                      chartWidth < 500 ? 10 :
+                      chartWidth < 700 ? 11 : 12,
+                    lineHeight: "1.4",
+                    paddingTop: 6,
+                  }}
+                >
+                  {payload?.map((entry: any, index: number) => (
+                    <span
+                      key={`legend-${index}`}
+                      onMouseEnter={() => handleLegendMouseEnter(entry)}
+                      onMouseLeave={handleLegendMouseLeave}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        color: entry.color,
+                        marginRight: 8,
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" style={{ marginRight: 4 }}>
+                        <line
+                          x1="0"
+                          y1="7"
+                          x2="14"
+                          y2="7"
+                          stroke={entry.color}
+                          strokeWidth="2"
+                        />
+                      </svg>
+                      <span style={{ textAlign: "center" }}>{entry.value}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
             />
 
-          {/* Линия + заливка */}
-           {devices.map((deviceId, idx) => {
+{devices.map((deviceId, idx) => {
               const isHovered = hoveringDataKey === deviceId;
 
               const opacity =
                 hoveringDataKey && !isHovered
                   ? 0.3
                   : 1;
-            return(
+              // Get device name from the original data payload (первая точка с этим device)
+              const point = data.find((p) => p.device === deviceId);
+              const deviceInfo = point?.deviceName || '';
+              return(
                   <Area
                     key={deviceId}
                     type="monotone"
@@ -437,7 +503,7 @@ const handleLegendMouseLeave = () => {
                     strokeOpacity={opacity}
                     fill="none"
                     activeDot={false}
-                    name={deviceId}
+                    name={deviceId + ' (' + deviceInfo + ')'}
                     isAnimationActive={false}
                   />
                 )})}

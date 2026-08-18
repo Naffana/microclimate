@@ -65,5 +65,7 @@ export async function sqlDeleteNormy(id: number) {
   await pool
     .request()
     .input("Id_Norm", sql.Int, id)
-    .query(`DELETE FROM Normy WHERE Id_Norm = @Id_Norm`);
+    .query(`
+      DELETE FROM Normy WHERE Id_Norm = @Id_Norm;
+    `);
 }

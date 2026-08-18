@@ -134,10 +134,12 @@ export async function fetchArea(dateFrom?: string, dateTo?: string) {
                 `select distinct 
                 Type.Name as Type_Name, 
                 Source.Name as Source_Name, 
+                Source.Ip as Ip,
                 Event.Date, Event.Value, 
                 Normy.Min_Value as Min,
                 Normy.Max_Value as Max,
-                Device.Slave_ID as Device_Name
+                Device.Slave_ID as Device_Name,
+                Device.Name as Device_Real_Name
                     from Event
                     join Type on type.ID_type = Event.ID_Type
                     join Source on Source.ID_source = Event.ID_Source
@@ -159,6 +161,7 @@ export type ChartPoint = {
   time: string;    
   value: number;
   device: string;
+  deviceName?: string;
 };
 
 export type TypeChart = {
@@ -169,6 +172,7 @@ export type TypeChart = {
 };
 
 export type SourceCharts = {
+  ip: string;
   source: string;       
   charts: TypeChart[];
 };
@@ -184,18 +188,28 @@ export async function fetchAreaInfo(dateFrom?: string, dateTo?: string): Promise
     data: ChartPoint[]; 
   };
 
-  const bySource = new Map<string, Map<string, Series>>();
+  // Группируем строки по IP, а внутри по source (имени), внутри по типу
+  const byIp = new Map<string, { source: string, typeMap: Map<string, Series> }[]>();
 
   for (const row of rows) {
+    const ip = row.Ip;
     const source = row.Source_Name;
     const type = row.Type_Name;
     const min  = row.Min;
     const max = row.Max;
 
-    if (!bySource.has(source)) {
-      bySource.set(source, new Map());
+    if (!byIp.has(ip)) {
+      byIp.set(ip, []);
     }
-    const SourceMap = bySource.get(source)!;
+    const sources = byIp.get(ip)!;
+
+    let srcEntry = sources.find(s => s.source === source);
+    if (!srcEntry) {
+      srcEntry = { source, typeMap: new Map() };
+      sources.push(srcEntry);
+    }
+
+    const SourceMap = srcEntry.typeMap;
 
     if (!SourceMap.has(type)) {
       SourceMap.set(type, {min, max, data: [],});
@@ -206,20 +220,22 @@ export async function fetchAreaInfo(dateFrom?: string, dateTo?: string): Promise
       time: row.Date.toISOString(),
       value: row.Value,
       device: row.Device_Name,
+      deviceName: row.Device_Real_Name,
     });
   }
 
   const result: SourceCharts[] = [];
 
-  for (const [source, typeMap] of bySource.entries()) {
-    const charts: TypeChart[] = [];
-    for (const [type, list] of typeMap.entries()) {
-      charts.push({ type, data: list.data, min: list.min, max: list.max });
-    }
-    result.push({ source, charts });
-  }
+  Array.from(byIp.entries()).forEach(([ip, sources]) => {
+    sources.forEach((srcEntry) => {
+      const charts: TypeChart[] = [];
+      Array.from(srcEntry.typeMap.entries()).forEach(([type, list]) => {
+        charts.push({ type, data: list.data, min: list.min, max: list.max });
+      });
+      result.push({ ip, source: srcEntry.source, charts });
+    });
+  });
 
-  
   return result;
 }
 

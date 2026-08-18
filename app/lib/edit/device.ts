@@ -75,5 +75,8 @@ export async function sqlDeleteDevice(id: number) {
   await pool
     .request()
     .input("Id_Device", sql.Int, id)
-    .query(`DELETE FROM Device WHERE Id_Device = @Id_Device`);
+    .query(`
+      DELETE FROM Event WHERE ID_Device = @Id_Device;
+      DELETE FROM Device WHERE Id_Device = @Id_Device;
+    `);
 }

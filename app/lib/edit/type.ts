@@ -65,7 +65,7 @@ export async function sqlDeleteType(id: number) {
     .request()
     .input("Id_Type", sql.Int, id)
     .query(`
-      DELETE FROM Type
-      WHERE Id_Type = @Id_Type
+      DELETE FROM Event WHERE ID_Type = @Id_Type;
+      DELETE FROM Type WHERE Id_Type = @Id_Type;
     `);
 }

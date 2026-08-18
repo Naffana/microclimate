@@ -25,7 +25,7 @@ return (
     <div className="flex justify-center mt-5 shrink-0">
       <DateFilter/>
     </div>
-    <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden snap-y snap-mandatory">
+    <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden snap-y snap-mandatory [scrollbar-gutter:stable]">
     <AreaMapClient
           initialData={chartdata}
           start={start}
