@@ -100,3 +100,13 @@ svg:focus, svg *:focus {
   left: 0 !important;
   right: 0 !important;
 }
+
+.recharts-legend-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recharts-legend-item-text {
+  text-align: center;
+}

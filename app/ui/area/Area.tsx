@@ -319,6 +319,14 @@ const handleLegendMouseLeave = () => {
     const CHART_RIGHT_MARGIN = 20;
 
     const handleTooltipMove = (e: MouseEvent) => {
+      // Показывать тултип только при наведении на область графика (SVG)
+      const target = e.target as HTMLElement;
+      if (!target.closest?.(".recharts-surface")) {
+        setIsLocalHoverRef.current(false);
+        onTooltipChangeRef.current?.(null);
+        return;
+      }
+
       const rect = el.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const chartAreaWidth = rect.width - CHART_LEFT - CHART_RIGHT_MARGIN;
@@ -434,53 +442,15 @@ const handleLegendMouseLeave = () => {
               verticalAlign="bottom"
               align="center"
               iconType="plainline"
-              content={({ payload }: any) => (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: "0 16px",
-                    width: "100%",
-                    cursor: "pointer",
-                    fontSize:
-                      chartWidth < 300 ? 9 :
-                      chartWidth < 500 ? 10 :
-                      chartWidth < 700 ? 11 : 12,
-                    lineHeight: "1.4",
-                    paddingTop: 6,
-                  }}
-                >
-                  {payload?.map((entry: any, index: number) => (
-                    <span
-                      key={`legend-${index}`}
-                      onMouseEnter={() => handleLegendMouseEnter(entry)}
-                      onMouseLeave={handleLegendMouseLeave}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        color: entry.color,
-                        marginRight: 8,
-                      }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 14 14" style={{ marginRight: 4 }}>
-                        <line
-                          x1="0"
-                          y1="7"
-                          x2="14"
-                          y2="7"
-                          stroke={entry.color}
-                          strokeWidth="2"
-                        />
-                      </svg>
-                      <span style={{ textAlign: "center" }}>{entry.value}</span>
-                    </span>
-                  ))}
-                </div>
-              )}
+              wrapperStyle={{
+                cursor: "pointer",
+                fontSize:
+                  chartWidth < 300 ? 9 :
+                  chartWidth < 500 ? 10 :
+                  chartWidth < 700 ? 11 : 12,
+                lineHeight: "1.4",
+                paddingTop: 6,
+              }}
             />
 
 {devices.map((deviceId, idx) => {

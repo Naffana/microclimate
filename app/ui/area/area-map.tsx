@@ -54,7 +54,7 @@ export function Area_map({ sources, start, end, isLoading }: { sources: SourceCh
   const toggleSource = (ip: string) => {
     setOpenMap((prev) => ({
       ...prev,
-      [ip]: !prev[ip],
+      [ip]: !(prev[ip] ?? true),
     }));
   };
 
