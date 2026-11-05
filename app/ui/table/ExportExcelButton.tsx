@@ -333,7 +333,7 @@ export default function ExportExcelButton({
       >
         {exporting
           ? "Выгрузка данных..."
-          : "Скачать все таблицы в Excel"}
+          : "Excel"}
       </button>
 
       {error && (
