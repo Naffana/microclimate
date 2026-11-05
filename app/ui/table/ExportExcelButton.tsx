@@ -204,7 +204,7 @@ export default function ExportExcelButton({
         // Строки измерений и выделение значений вне нормы
         rows.forEach((row, rowIndex) => {
           const value = row.Value;
-
+  
           const isOutOfRange =
             typeof value === "number" &&
             Number.isFinite(value) &&
